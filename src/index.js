@@ -1,25 +1,47 @@
-const argv = require('yargs').argv;
+const yargs = require('yargs').options({
+    'fileOut': {
+        alias: 'fo',
+        demand: true,
+        default: 'versions.json',
+        describe: 'file path where to put list of tags from repository'
+    },
+    'packageJson': {
+        alias: 'pkg',
+        demand: false,
+        describe: 'package.json file with [repository.url] included'
+    },
+    'repository': {
+        alias: 'repo',
+        demand: false,
+        describe: 'repository url'
+    }
+}).usage('Usage: $0 (-repo [rep url] | -pkg [package.json]) -fo [output path]');
+const argv = yargs.argv;
 const remoteGitTags = require('remote-git-tags');
 const fs = require('fs');
 
 const repo = argv.repo || null;
+const pkg = argv.pkg || null;
 const fileOut = argv.fileOut || null;
 
-if (repo && fileOut) {
-    remoteGitTags(repo, (err, tags) => {
+
+let repoUrl = null;
+
+if (pkg) {
+    packageJson = JSON.parse(fs.readFileSync(pkg, 'utf8'));
+    repoUrl = packageJson.repository.url;
+} else if (repo) {
+    repoUrl = repo;
+}
+
+if (repoUrl && fileOut) {
+    remoteGitTags(repoUrl, (err, tags) => {
         if (err) {
             console.log('Error: ' + err);
-            process.exit(0);
         }
         fs.writeFileSync(fileOut, JSON.stringify(tags, null, '  '), 'utf8');
         console.log("Tags has been written to file: " + fileOut);
     });
-}
-if (!repo) {
-    console.log("--repo=repository_url param must be included");
-    process.exit(0);
-}
-if (!fileOut) {
-    console.log("--fileOut=output_path param must be included");
-    process.exit(0);
+} else {
+    yargs.showHelp();
 }
