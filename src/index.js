@@ -13,7 +13,7 @@ const yargs = require('yargs').options({
     'repository': {
         alias: 'repo',
         demand: false,
-        describe: 'repository url'
+        describe: 'repository urls'
     }
 }).usage('Usage: $0 (-repo [rep url] | -pkg [package.json]) -fo [output path]');
 const argv = yargs.argv;
@@ -28,7 +28,7 @@ const fileOut = argv.fileOut || null;
 let repoUrl = null;
 
 if (pkg) {
-    packageJson = JSON.parse(fs.readFileSync(pkg, 'utf8'));
+    let packageJson = JSON.parse(fs.readFileSync(pkg, 'utf8'));
     repoUrl = packageJson.repository.url;
 } else if (repo) {
     repoUrl = repo;
